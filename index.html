@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suivi de FOAD #avenir</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1c1c28;--ink2:#2e2e3e;--paper:#f7f4ef;--paper2:#ede9e2;--paper3:#e3dfd7;--accent:#b5813a;--accent2:#d4a55a;--red:#b83232;--green:#2a7a56;--blue:#2a5fa8;--border:#ccc8bf;--shadow:0 2px 16px rgba(28,28,40,.10);--r:5px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Jost',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;}
+  header{background:var(--ink);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Lora',serif;color:var(--paper);font-size:1.15rem;}
+  .logo em{color:var(--accent2);font-style:italic;}
+  .nav{display:flex;gap:2px;}
+  .nav-btn{background:none;border:none;color:#999;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;padding:7px 15px;border-radius:var(--r);cursor:pointer;transition:all .2s;}
+  .nav-btn:hover{color:var(--paper);background:rgba(255,255,255,.07);}
+  .nav-btn.active{background:var(--accent);color:#fff;}
+
+  #file-banner{background:#fff3cd;border-bottom:2px solid var(--accent);padding:9px 28px;display:flex;align-items:center;gap:16px;font-size:.83rem;flex-wrap:wrap;}
+  #file-banner.connected{background:#d4edda;border-color:var(--green);}
+  .banner-slots{display:flex;gap:16px;flex-wrap:wrap;}
+  .file-slot{display:flex;flex-direction:column;gap:3px;}
+  .file-slot .lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;}
+  .file-slot .st{font-size:.78rem;font-weight:600;}
+  .st.ok{color:var(--green);}
+  .st.no{color:#b07000;}
+
+  .container{max-width:1180px;margin:0 auto;padding:26px 20px;}
+  .page{display:none;}.page.active{display:block;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:24px 26px;margin-bottom:20px;}
+  .card-title{font-family:'Lora',serif;font-size:1.02rem;margin-bottom:16px;padding-bottom:11px;border-bottom:1.5px solid var(--paper2);display:flex;align-items:center;gap:10px;color:var(--ink);}
+  .pill{background:var(--accent);color:#fff;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:600;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px;}
+  .fg{display:flex;flex-direction:column;gap:5px;}
+  label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#777;}
+  input,select{border:1.5px solid var(--border);border-radius:var(--r);padding:9px 11px;font-family:'Jost',sans-serif;font-size:.88rem;color:var(--ink);background:var(--paper);transition:border-color .18s,background .18s;width:100%;}
+  input:focus,select:focus{outline:none;border-color:var(--accent);background:#fff;}
+  input:disabled,select:disabled{opacity:.4;cursor:not-allowed;}
+  .btn{border:none;border-radius:var(--r);font-family:'Jost',sans-serif;font-weight:600;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .18s;padding:9px 20px;}
+  .btn-dark{background:var(--ink);color:var(--paper);}
+  .btn-dark:hover{background:var(--ink2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.18);}
+  .btn-gold{background:var(--accent);color:#fff;}
+  .btn-gold:hover{background:var(--accent2);}
+  .btn-ghost{background:var(--paper2);color:var(--ink);}
+  .btn-ghost:hover{background:var(--paper3);}
+  .btn-red{background:var(--red);color:#fff;padding:4px 10px;font-size:.73rem;}
+  .btn-green{background:var(--green);color:#fff;padding:4px 10px;font-size:.73rem;}
+  .btn-sm{padding:5px 12px;font-size:.73rem;}
+  .filters{display:flex;gap:11px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .filters .fg{min-width:160px;}
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:.83rem;}
+  thead tr{background:var(--ink);color:var(--paper);}
+  thead th{padding:9px 10px;text-align:left;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+  tbody tr:hover{background:var(--paper2);}
+  tbody td{padding:8px 10px;vertical-align:middle;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;}
+  .b-green{background:#d4edd9;color:var(--green);}
+  .b-red{background:#fde8e8;color:var(--red);}
+  .b-gray{background:#eee;color:#888;}
+  .b-blue{background:#dde8f8;color:var(--blue);}
+  .b-orange{background:#fff0d4;color:#a06000;}
+  .tag{display:inline-block;background:var(--paper2);border:1px solid var(--border);border-radius:3px;padding:1px 7px;font-size:.72rem;color:#555;margin:1px;}
+
+  .formation-selector{background:var(--paper2);border:2px solid var(--accent);border-radius:var(--r);padding:13px 16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .formation-selector label{font-size:.8rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+  .formation-selector select{max-width:320px;border-color:var(--accent);background:#fff;font-weight:600;}
+  .fi{font-size:.77rem;color:#666;}.fi strong{color:var(--ink);}
+
+  .multi-select-wrap{border:1.5px solid var(--border);border-radius:var(--r);background:var(--paper);max-height:360px;overflow-y:auto;}
+  .msi{display:flex;align-items:center;gap:9px;padding:7px 11px;cursor:pointer;border-bottom:1px solid var(--paper2);font-size:.88rem;transition:background .12s;user-select:none;}
+  .msi:last-child{border-bottom:none;}
+  .msi:hover{background:var(--paper2);}
+  .msi input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;border:none;padding:0;background:none;}
+  .msi.checked{background:#fdf3e3;}
+  .sel-count{font-size:.74rem;color:var(--accent);font-weight:600;margin-top:4px;min-height:15px;}
+  .ph{padding:10px 12px;color:#aaa;font-size:.82rem;font-style:italic;}
+
+  .formations-list{display:flex;flex-direction:column;gap:11px;margin-bottom:16px;}
+  .fc{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;}
+  .fc-head{background:var(--paper2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+  .fc-head:hover{background:var(--paper3);}
+  .fc-title{font-weight:600;font-size:.92rem;display:flex;align-items:center;gap:10px;}
+  .fc-body{padding:14px;display:none;}
+  .fc-body.open{display:block;}
+  .agrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .asec h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#777;margin-bottom:8px;}
+  .alist{list-style:none;}
+  .alist li{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid var(--paper2);font-size:.85rem;}
+  .alist li:last-child{border:none;}
+  .aadd{display:flex;gap:7px;margin-top:9px;}
+  .aadd select{flex:1;}
+
+  .people-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .plist{list-style:none;margin-top:9px;}
+  .plist li{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-bottom:1px solid var(--border);font-size:.86rem;}
+  .plist li:last-child{border:none;}
+  .add-row{display:flex;gap:8px;margin-top:11px;}
+  .add-row input{flex:1;}
+
+  .info-box{background:#e8f4fd;border:1px solid #b8d8f0;border-radius:var(--r);padding:10px 14px;font-size:.82rem;color:#1a5c8a;margin-bottom:16px;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(28,28,40,.5);z-index:200;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:var(--r);padding:24px;width:380px;max-width:94vw;border-top:4px solid var(--accent);box-shadow:0 8px 40px rgba(0,0,0,.2);}
+  .modal h3{font-family:'Lora',serif;font-size:1rem;margin-bottom:14px;}
+  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;}
+  #toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:var(--r);font-size:.83rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);border-left:4px solid var(--accent);transform:translateY(70px);opacity:0;transition:all .28s ease;z-index:999;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  .empty{text-align:center;padding:38px 20px;color:#bbb;font-size:.86rem;}
+  .empty-icon{font-size:2rem;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Suivi de <em>Formation</em></div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('saisie',this)">Saisie</button>
+    <button class="nav-btn" onclick="showPage('liste',this)">Séances</button>
+    <button class="nav-btn" onclick="showPage('formations',this)">Formations</button>
+    <button class="nav-btn" onclick="showPage('personnes',this)">Personnes</button>
+    <button class="nav-btn" onclick="showPage('signatures',this)">Signatures</button>
+  </nav>
+</header>
+
+<div id="file-banner">
+  <div style="font-size:1.1rem">📂</div>
+  <div style="flex:1;min-width:160px">
+    <strong style="display:block">Fichiers partagés sur le réseau</strong>
+    <span style="font-size:.75rem;color:#666">Les deux fichiers doivent être dans le dossier commun</span>
+  </div>
+  <div class="banner-slots">
+    <div class="file-slot">
+      <span class="lbl">Séances (données)</span>
+      <span class="st no" id="st-seances">Non connecté</span>
+      <button class="btn btn-gold btn-sm" style="margin-top:3px" onclick="openFile('seances')">Choisir seances.csv</button>
+    </div>
+    <div class="file-slot">
+      <span class="lbl">Formations (config)</span>
+      <span class="st no" id="st-formations">Non connecté</span>
+      <button class="btn btn-gold btn-sm" style="margin-top:3px" onclick="openFile('formations')">Choisir formations.csv</button>
+    </div>
+  </div>
+  <div id="reconnect-wrap" style="display:none">
+    <button class="btn btn-green" style="font-size:.95rem;padding:7px 18px" onclick="reconnectFiles()">🔄 Reconnecter les fichiers</button>
+    <span style="font-size:.75rem;color:#555;margin-left:8px">Fichiers utilisés la dernière fois détectés</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="overlay" id="modal-val">
+  <div class="modal">
+    <h3>Modifier la séance</h3>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Intitulé de la séance</label>
+      <textarea id="m-intitule" rows="3" style="resize:vertical;width:100%;font-family:inherit;font-size:.88rem;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r);color:var(--ink);background:var(--paper);transition:border-color .18s;box-sizing:border-box" onfocus="this.style.borderColor='var(--accent)';this.style.background='#fff'" onblur="this.style.borderColor='var(--border)';this.style.background='var(--paper)'"></textarea>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="fg"><label>H. prévues</label><input type="number" id="m-hprev" step="0.5" min="0" oninput="updateModalHeures()"></div>
+      <div class="fg"><label>H. validées</label><input type="number" id="m-heures" step="0.5" min="0"></div>
+      <div class="fg"><label>Statut</label>
+        <select id="m-valide" onchange="updateModalHeures()">
+          <option value="oui">Validé ✓</option>
+          <option value="partiel">Partiel ⚠</option>
+          <option value="non">Non validé ✗</option>
+          <option value="a_valider">À valider ⏳</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="saveValidation()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAISIE -->
+<div id="page-saisie" class="page active">
+  <div class="container">
+    <div class="card">
+      <div class="card-title"><span class="pill">✏</span> Nouvelle séance</div>
+      <div class="formation-selector">
+        <label>① Formation</label>
+        <select id="f-formation" onchange="onFormationChange()"><option value="">— Choisir une formation —</option></select>
+        <div class="fi" id="formation-info"></div>
+      </div>
+      <div class="grid">
+        <div class="fg"><label>Formateur·trice *</label><select id="f-formateur" disabled onchange="onFormateurChange()"><option value="">— Choisir une formation d'abord —</option></select></div>
+        <div class="fg"><label>Date *</label><input type="date" id="f-date" disabled></div>
+        <div class="fg"><label>Intitulé de la séance *</label><textarea id="f-intitule" disabled placeholder="Ex : Module 3 — Compréhension écrite et production orale" rows="3" style="resize:vertical;width:100%;font-family:inherit;font-size:inherit;padding:6px 8px;border:1px solid #d0d0d0;border-radius:5px;box-sizing:border-box"></textarea></div>
+        <div class="fg"><label>Heures prévues</label><input type="number" id="f-hprev" step="0.25" min="0" disabled placeholder="2.5"></div>
+      </div>
+      <div id="sig-zone" style="display:none;margin-top:14px;padding:12px 14px;background:var(--paper2);border-radius:var(--r);border:1.5px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+          <label style="margin:0" id="sig-zone-label">Signature du formateur</label>
+          <div style="display:flex;gap:7px;align-items:center" id="sig-zone-actions"></div>
+        </div>
+        <div id="sig-zone-content"></div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <label>Stagiaire(s) participants * <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.78rem">(cochez tous les participants)</span></label>
+          <button type="button" id="btn-tout-cocher" class="btn btn-ghost btn-sm" style="white-space:nowrap;display:none" onclick="toutCocher()">☑ Tout cocher</button>
+        </div>
+        <div class="multi-select-wrap" id="stag-boxes" style="margin-top:6px"><div class="ph">Choisissez d'abord une formation</div></div>
+        <div class="sel-count" id="sel-count"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-dark" id="btn-submit" onclick="submitSeance()" disabled>Enregistrer la séance</button>
+        <button class="btn btn-ghost" onclick="resetForm()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LISTE -->
+<div id="page-liste" class="page">
+  <div class="container">
+    <div class="card">
+      <div class="card-title"><span class="pill">☰</span> Toutes les séances</div>
+      <div class="filters">
+        <div class="fg"><label>Formation</label><select id="fil-formation" onchange="onFilterFChange()"><option value="">Toutes</option></select></div>
+        <div class="fg"><label>Stagiaire</label><select id="fil-stagiaire" onchange="renderTable()"><option value="">Tous</option></select></div>
+        <div class="fg"><label>Mois</label><input type="month" id="fil-mois" onchange="renderTable()"></div>
+        <div class="fg"><label>Statut</label><select id="fil-statut" onchange="renderTable()"><option value="">Tous</option><option value="a_valider">À valider</option><option value="oui">Validé</option><option value="partiel">Partiel</option><option value="non">Non validé</option></select></div>
+        <button class="btn btn-ghost btn-sm" style="margin-bottom:1px" onclick="clearFilters()">Effacer</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Formation</th><th>Formateur</th><th>Stagiaire</th><th>Date</th><th>Intitulé</th><th>H.prév.</th><th style="display:none">Lieu</th><th style="display:none">Suivi</th><th style="display:none">Type</th><th>H.val.</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORMATIONS -->
+<div id="page-formations" class="page">
+  <div class="container">
+    <div class="info-box">💡 La configuration est sauvegardée dans <strong>formations.csv</strong> sur le réseau — visible depuis tous les postes. Pour qu'un stagiaire apparaisse ici, ajoutez-le d'abord dans l'onglet <strong>Personnes</strong>.</div>
+    <div class="card">
+      <div class="card-title"><span class="pill">＋</span> Nouvelle formation</div>
+      <div style="display:flex;gap:10px;align-items:flex-end">
+        <div class="fg" style="flex:2"><label>Nom</label><input type="text" id="new-formation-nom" placeholder="Ex : Alphabétisation groupe A" onkeydown="if(event.key==='Enter')createFormation()"></div>
+        <div class="fg" style="flex:1"><label>N° de marché</label><input type="text" id="new-formation-marche" placeholder="Ex : 2024-FOAD-001" maxlength="20" onkeydown="if(event.key==='Enter')createFormation()"></div>
+        <button class="btn btn-gold" onclick="createFormation()">Créer</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="pill">📋</span> Formations <span style="font-size:.75rem;font-weight:400;font-family:'Jost',sans-serif;color:#999;margin-left:4px">(cliquer pour déplier)</span></div>
+      <div class="formations-list" id="formations-list"><div class="empty"><div class="empty-icon">🎓</div>Aucune formation</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONNES -->
+<div id="page-personnes" class="page">
+  <div class="container">
+    <div class="people-grid">
+      <div class="card">
+        <div class="card-title"><span class="pill">👤</span> Stagiaires</div>
+        <ul class="plist" id="list-stagiaires"></ul>
+        <div class="add-row"><input type="text" id="new-stagiaire" placeholder="Ajouter un stagiaire..." onkeydown="if(event.key==='Enter')addPerson('stagiaires')"><button class="btn btn-gold" onclick="addPerson('stagiaires')">Ajouter</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="pill">🎓</span> Formateurs</div>
+        <ul class="plist" id="list-formateurs"></ul>
+        <div class="add-row"><input type="text" id="new-formateur" placeholder="Ajouter un formateur..." onkeydown="if(event.key==='Enter')addPerson('formateurs')"><button class="btn btn-gold" onclick="addPerson('formateurs')">Ajouter</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNATURES -->
+<div id="page-signatures" class="page">
+  <div class="container">
+    <div class="info-box">💡 Chaque formateur dessine sa signature ci-dessous. Elle sera automatiquement insérée dans les fiches PDF lors de l'export. Les signatures sont sauvegardées dans <strong>formations.csv</strong>.</div>
+    <div id="sig-list"></div>
+  </div>
+</div>
+
+<script>
+// STATE
+let H={seances:null,formations:null};
+let D={seances:[],stagiaires:[],formateurs:[],formations:[],signatures:{}};
+let editId=null;
+const SH=['id','formation','formateur','stagiaire','date','intitule','heures_prevues','lieu','suivi','type_seance','heures_validees','valide','created_at'];
+const FH=['id','nom','type','valeur','marche','signature'];
+
+// CSV — robuste : virgule OU point-virgule, BOM, CRLF, guillemets Excel
+function parseCSV(txt){
+  // Retirer le BOM UTF-8 éventuel ajouté par Excel
+  txt=txt.replace(/^\uFEFF/,'');
+  // Normaliser les fins de ligne
+  const lines=txt.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return[];
+  // Détecter le séparateur : point-virgule ou virgule
+  const sep=lines[0].includes(';')?';':',';
+  const hdrs=splitCSV(lines[0],sep).map(h=>h.trim().replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const v=splitCSV(line,sep);
+    const o={};
+    hdrs.forEach((h,i)=>o[h]=(v[i]||'').replace(/^"|"$/g,'').trim());
+    return o;
+  }).filter(o=>Object.values(o).some(v=>v!==''));  // ignorer les lignes vraiment vides
+}
+function splitCSV(line,sep=','){
+  const r=[];let c='';let q=false;
+  for(const ch of line){
+    if(ch==='"'){q=!q;}
+    else if(ch===sep&&!q){r.push(c);c='';}
+    else c+=ch;
+  }
+  r.push(c);return r;
+}
+function toCSV(rows,hdrs){
+  const e=v=>{const s=String(v??'');return`"${s.replace(/"/g,'""')}"`; };
+  return[hdrs.map(h=>`"${h}"`).join(','),...rows.map(r=>hdrs.map(h=>e(r[h])).join(','))].join('\n');
+}
+
+// Formations CSV encoding: one row per member
+// columns: id, nom, type (formateur|stagiaire|formation), valeur
+function fToRows(){
+  const rows=[];
+  D.formations.forEach(f=>{
+    if(!f.formateurs.length&&!f.stagiaires.length){rows.push({id:f.id,nom:f.nom,type:'formation',valeur:f.marche||'',marche:f.marche||'',signature:''});}
+    f.formateurs.forEach(v=>rows.push({id:f.id,nom:f.nom,type:'formateur',valeur:v,marche:f.marche||'',signature:D.signatures[v]||''}));
+    f.stagiaires.forEach(v=>rows.push({id:f.id,nom:f.nom,type:'stagiaire',valeur:v,marche:f.marche||'',signature:''}));
+  });
+  return rows;
+}
+function rowsToF(rows){
+  const map=new Map();
+  rows.forEach(r=>{
+    if(!r.id||!r.nom)return;
+    if(!map.has(r.id))map.set(r.id,{id:r.id,nom:r.nom,marche:r.marche||'',formateurs:[],stagiaires:[]});
+    const f=map.get(r.id);
+    if(r.marche&&!f.marche)f.marche=r.marche;
+    if(r.type==='formateur'&&r.valeur&&!f.formateurs.includes(r.valeur)){
+      f.formateurs.push(r.valeur);
+      if(r.signature)D.signatures[r.valeur]=r.signature;
+    }
+    if(r.type==='stagiaire'&&r.valeur&&!f.stagiaires.includes(r.valeur))f.stagiaires.push(r.valeur);
+  });
+  return[...map.values()];
+}
+
+// IndexedDB — persistance des handles
+const IDB_NAME='suivi-formation',IDB_STORE='handles',IDB_VER=1;
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,IDB_VER);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    r.onsuccess=e=>res(e.target.result);
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbSet(key,val){
+  const db=await idbOpen();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(val,key);
+    tx.oncomplete=()=>res();
+    tx.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbGet(key){
+  const db=await idbOpen();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const r=tx.objectStore(IDB_STORE).get(key);
+    r.onsuccess=e=>res(e.target.result);
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+
+// Vérifier si des handles sont sauvegardés au chargement
+async function checkSavedHandles(){
+  try{
+    const hs=await idbGet('handle-seances');
+    const hf=await idbGet('handle-formations');
+    if(hs||hf){
+      document.getElementById('reconnect-wrap').style.display='flex';
+      document.getElementById('reconnect-wrap').style.alignItems='center';
+    }
+  }catch(e){}
+}
+
+async function reconnectFiles(){
+  const btn=document.querySelector('#reconnect-wrap button');
+  btn.textContent='⏳ Connexion…';btn.disabled=true;
+  let ok=0;
+  try{
+    const hs=await idbGet('handle-seances');
+    const hf=await idbGet('handle-formations');
+    if(hs){const perm=await hs.requestPermission({mode:'readwrite'});if(perm==='granted'){H.seances=hs;await loadFile('seances');ok++;}}
+    if(hf){const perm=await hf.requestPermission({mode:'readwrite'});if(perm==='granted'){H.formations=hf;await loadFile('formations');ok++;}}
+    updateBanner();
+    if(ok===2){
+      document.getElementById('reconnect-wrap').style.display='none';
+      toast('Fichiers reconnectés ✓');
+    } else if(ok>0){
+      toast(ok+' fichier(s) reconnecté(s) — vérifiez les permissions','var(--accent)');
+    } else {
+      toast('Impossible de reconnecter — choisissez les fichiers manuellement','var(--red)');
+      btn.textContent='🔄 Reconnecter les fichiers';btn.disabled=false;
+    }
+  }catch(e){
+    toast('Erreur reconnexion : '+e.message,'var(--red)');
+    btn.textContent='🔄 Reconnecter les fichiers';btn.disabled=false;
+  }
+}
+
+// File access
+async function openFile(which){
+  try{
+    const[handle]=await window.showOpenFilePicker({types:[{description:'CSV',accept:{'text/csv':['.csv']}}],multiple:false});
+    const nomAttendu=which==='seances'?'seances.csv':'formations.csv';
+    if(handle.name!==nomAttendu){
+      toast(`Fichier incorrect — attendu : ${nomAttendu},'var(--red)'`);
+      return;
+    }
+    H[which]=handle;
+    await idbSet('handle-'+which,handle);
+    await loadFile(which);
+    updateBanner();
+    document.getElementById('reconnect-wrap').style.display='none';
+    toast(which==='seances'?'Séances connectées ✓':'Formations connectées ✓');
+  }catch(e){if(e.name!=='AbortError')console.error(e);}
+}
+async function loadFile(which){
+  const file=await H[which].getFile();
+  const txt=await file.text();
+  if(which==='seances'){
+    D.seances=parseCSV(txt);
+    const ss=new Set(),fs=new Set();
+    D.seances.forEach(r=>{if(r.stagiaire)ss.add(r.stagiaire);if(r.formateur)fs.add(r.formateur);});
+    D.stagiaires=[...new Set([...D.stagiaires,...ss])].filter(Boolean);
+    D.formateurs=[...new Set([...D.formateurs,...fs])].filter(Boolean);
+  }else{
+    D.signatures={};
+    D.formations=rowsToF(parseCSV(txt));
+    D.formations.forEach(f=>{
+      f.formateurs.forEach(n=>{if(!D.formateurs.includes(n))D.formateurs.push(n);});
+      f.stagiaires.forEach(n=>{if(!D.stagiaires.includes(n))D.stagiaires.push(n);});
+    });
+  }
+  refreshAll();renderTable();
+}
+async function save(which){
+  if(!H[which]){toast(`Connectez d'abord ${which==='seances'?'seances.csv':'formations.csv'},'var(--red)'`);return false;}
+  try{
+    const w=await H[which].createWritable();
+    await w.write(which==='seances'?toCSV(D.seances,SH):toCSV(fToRows(),FH));
+    await w.close();return true;
+  }catch(e){toast('Erreur: '+e.message,'var(--red)');return false;}
+}
+
+// Banner
+function updateBanner(){
+  document.getElementById('st-seances').textContent=H.seances?'✓ '+H.seances.name:'Non connecté';
+  document.getElementById('st-seances').className='st '+(H.seances?'ok':'no');
+  document.getElementById('st-formations').textContent=H.formations?'✓ '+H.formations.name:'Non connecté';
+  document.getElementById('st-formations').className='st '+(H.formations?'ok':'no');
+  document.getElementById('file-banner').classList.toggle('connected',!!(H.seances&&H.formations));
+}
+
+// Nav
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');btn.classList.add('active');
+  if(name==='liste'){refreshAll();renderTable();}
+  if(name==='personnes')renderPeople();
+  if(name==='formations')renderFormations();
+  if(name==='saisie')refreshAll();
+  if(name==='signatures')renderSignatures();
+}
+function toast(msg,color){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=color||'var(--accent)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
+// Dropdowns
+function refreshAll(){
+  fillSel('f-formation',D.formations.map(f=>f.nom));
+  fillSel('fil-formation',D.formations.map(f=>f.nom),true);
+  fillSel('fil-stagiaire',D.stagiaires,true);
+  const selF=document.getElementById('f-formation');
+  if(selF&&selF.value) onFormationChange();
+}
+function fillSel(id,items,all=false){
+  const el=document.getElementById(id);if(!el)return;
+  const cur=el.value;
+  el.innerHTML=all?'<option value="">Tous</option>':'<option value="">— Choisir —</option>';
+  items.forEach(n=>{const o=document.createElement('option');o.value=o.textContent=n;el.appendChild(o);});
+  if(cur)el.value=cur;
+}
+
+// Saisie
+function onFormationChange(){
+  const nom=document.getElementById('f-formation').value;
+  const f=D.formations.find(f=>f.nom===nom);
+  const on=!!f;
+  ['f-formateur','f-date','f-intitule','f-hprev'].forEach(id=>document.getElementById(id).disabled=!on);
+  document.getElementById('btn-submit').disabled=!on;
+  if(!on){
+    document.getElementById('f-formateur').innerHTML='<option value="">— Choisir une formation d\'abord —</option>';
+    document.getElementById('stag-boxes').innerHTML='<div class="ph">Choisissez d\'abord une formation</div>';
+    document.getElementById('sel-count').textContent='';
+    document.getElementById('formation-info').innerHTML='';return;
+  }
+  fillSel('f-formateur',f.formateurs);
+  buildCB(f.stagiaires);
+  document.getElementById('formation-info').innerHTML=`<strong>${f.formateurs.length}</strong> formateur(s) · <strong>${f.stagiaires.length}</strong> stagiaire(s)`;
+  onFormateurChange();
+}
+
+function onFormateurChange(){
+  const nom=document.getElementById('f-formateur').value;
+  const zone=document.getElementById('sig-zone');
+  if(!nom){zone.style.display='none';return;}
+  zone.style.display='block';
+  document.getElementById('sig-zone-label').textContent=`Signature — ${nom}`;
+  const hasSig=!!D.signatures[nom];
+  const content=document.getElementById('sig-zone-content');
+  const actions=document.getElementById('sig-zone-actions');
+  if(hasSig){
+    content.innerHTML=`<img src="${D.signatures[nom]}" style="height:52px;border:1px solid var(--border);border-radius:var(--r);background:#fff;padding:3px;display:block">`;
+    actions.innerHTML=`<span class="badge b-green" style="font-size:.65rem">✓ Enregistrée</span><button class="btn btn-ghost btn-sm" onclick="showInlinePad('${nom.replace(/'/g,"\\'")}')">Modifier</button>`;
+  }else{
+    content.innerHTML=`
+      <div style="font-size:.78rem;color:var(--red);margin-bottom:8px">⚠ Aucune signature pour ce formateur — dessinez-la ci-dessous</div>
+      <canvas id="inline-pad" width="400" height="90" style="border:1.5px solid var(--border);border-radius:var(--r);background:#fff;cursor:crosshair;touch-action:none;display:block"></canvas>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <label style="font-size:.7rem;color:#aaa">Épaisseur</label>
+        <input type="range" id="inline-stroke" min="0.5" max="4" step="0.5" value="1.8" style="width:90px;accent-color:var(--accent)">
+        <span style="font-size:.7rem;color:#aaa" id="inline-stroke-val">1.8</span>
+      </div>`;
+    actions.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="clearInlinePad()">🗑 Effacer</button><button class="btn btn-gold btn-sm" onclick="saveInlineSig('${nom.replace(/'/g,"\\'")}')">💾 Enregistrer</button>`;
+    initInlinePad();
+  }
+}
+
+function showInlinePad(nom){
+  const content=document.getElementById('sig-zone-content');
+  const actions=document.getElementById('sig-zone-actions');
+  content.innerHTML=`
+    <div style="margin-bottom:6px"><img src="${D.signatures[nom]}" style="height:40px;border:1px solid var(--border);border-radius:var(--r);background:#fff;padding:3px;opacity:.4"></div>
+    <canvas id="inline-pad" width="400" height="90" style="border:1.5px solid var(--border);border-radius:var(--r);background:#fff;cursor:crosshair;touch-action:none;display:block"></canvas>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <label style="font-size:.7rem;color:#aaa">Épaisseur</label>
+      <input type="range" id="inline-stroke" min="0.5" max="4" step="0.5" value="1.8" style="width:90px;accent-color:var(--accent)">
+      <span style="font-size:.7rem;color:#aaa" id="inline-stroke-val">1.8</span>
+    </div>`;
+  actions.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="onFormateurChange()">Annuler</button><button class="btn btn-ghost btn-sm" onclick="clearInlinePad()">🗑 Effacer</button><button class="btn btn-gold btn-sm" onclick="saveInlineSig('${nom.replace(/'/g,"\\'")}')">💾 Enregistrer</button>`;
+  initInlinePad();
+}
+
+function initInlinePad(){
+  const slider=document.getElementById('inline-stroke');
+  const sliderVal=document.getElementById('inline-stroke-val');
+  if(slider&&sliderVal) slider.addEventListener('input',()=>{sliderVal.textContent=slider.value;});
+  const canvas=document.getElementById('inline-pad');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let drawing=false;
+  const pos=(e)=>{const r=canvas.getBoundingClientRect();const src=e.touches?e.touches[0]:e;return{x:src.clientX-r.left,y:src.clientY-r.top};};
+  const start=(e)=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const move=(e)=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#1c1c28';ctx.lineWidth=slider?parseFloat(slider.value):1.8;ctx.lineCap='round';ctx.stroke();};
+  const stop=()=>{drawing=false;};
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);canvas.addEventListener('mouseup',stop);canvas.addEventListener('mouseleave',stop);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',stop);
+}
+
+function clearInlinePad(){
+  const c=document.getElementById('inline-pad');if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+async function saveInlineSig(nom){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const canvas=document.getElementById('inline-pad');if(!canvas)return;
+  const blank=document.createElement('canvas');blank.width=canvas.width;blank.height=canvas.height;
+  if(canvas.toDataURL()===blank.toDataURL()){toast('Dessinez d\'abord la signature','var(--red)');return;}
+  D.signatures[nom]=canvas.toDataURL('image/png');
+  await save('formations');
+  toast(`Signature de ${nom} enregistrée ✓`);
+  onFormateurChange();
+  renderSignatures();
+}
+function buildCB(stags){
+  const wrap=document.getElementById('stag-boxes');
+  const btn=document.getElementById('btn-tout-cocher');
+  if(!stags||!stags.length){wrap.innerHTML='<div class="ph">Aucun stagiaire assigné à cette formation</div>';document.getElementById('sel-count').textContent='';btn.style.display='none';return;}
+  wrap.innerHTML=stags.map(n=>`<label class="msi"><input type="checkbox" value="${n}" onchange="updSC()"><span>${n}</span></label>`).join('');
+  btn.style.display='inline-block';btn.textContent='☑ Tout cocher';
+  updSC();
+}
+function toutCocher(){
+  const boxes=document.querySelectorAll('#stag-boxes input[type=checkbox]');
+  const allChecked=[...boxes].every(b=>b.checked);
+  boxes.forEach(b=>b.checked=!allChecked);
+  updSC();
+  document.getElementById('btn-tout-cocher').textContent=allChecked?'☑ Tout cocher':'☐ Tout décocher';
+}
+function getChecked(){return[...document.querySelectorAll('#stag-boxes input[type=checkbox]:checked')].map(c=>c.value);}
+function updSC(){
+  document.querySelectorAll('#stag-boxes .msi').forEach(i=>i.classList.toggle('checked',i.querySelector('input').checked));
+  const c=getChecked();
+  document.getElementById('sel-count').textContent=c.length===0?'Aucun sélectionné':c.length===1?`1 sélectionné : ${c[0]}`:`${c.length} sélectionnés : ${c.join(', ')}`;
+}
+async function submitSeance(){
+  if(!H.seances){toast('Connectez d\'abord seances.csv','var(--red)');return;}
+  const formation=document.getElementById('f-formation').value;
+  const formateur=document.getElementById('f-formateur').value;
+  const stags=getChecked();
+  const date=document.getElementById('f-date').value;
+  const intitule=document.getElementById('f-intitule').value.trim();
+  if(!formation||!formateur||!stags.length||!date||!intitule){toast('Remplissez les champs obligatoires (*)','var(--red)');return;}
+  const base={formation,formateur,date,intitule,
+    heures_prevues:document.getElementById('f-hprev').value,
+    lieu:'Domicile',suivi:'Asynchrone',type_seance:'Individuel',
+    heures_validees:'',valide:'a_valider',
+    created_at:new Date().toLocaleString('fr-FR')
+  };
+  stags.forEach((stagiaire,i)=>{
+    D.seances.push({...base,id:(Date.now()+i).toString(),stagiaire});
+    if(!D.stagiaires.includes(stagiaire))D.stagiaires.push(stagiaire);
+  });
+  if(!D.formateurs.includes(formateur))D.formateurs.push(formateur);
+  const ok=await save('seances');
+  if(ok){toast(`${stags.length} séance(s) enregistrée(s) ✓`);resetForm();}
+}
+function resetForm(){
+  document.getElementById('f-formation').value='';
+  ['f-intitule','f-hprev'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('sig-zone').style.display='none';
+  onFormationChange();
+}
+
+// Table
+function onFilterFChange(){
+  const nom=document.getElementById('fil-formation').value;
+  const f=D.formations.find(f=>f.nom===nom);
+  fillSel('fil-stagiaire',f?f.stagiaires:D.stagiaires,true);renderTable();
+}
+function renderTable(){
+  const ff=document.getElementById('fil-formation')?.value||'';
+  const fs=document.getElementById('fil-stagiaire')?.value||'';
+  const fm=document.getElementById('fil-mois')?.value||'';
+  const fv=document.getElementById('fil-statut')?.value||'';
+  let rows=D.seances;
+  if(ff)rows=rows.filter(r=>r.formation===ff);
+  if(fs)rows=rows.filter(r=>r.stagiaire===fs);
+  if(fm)rows=rows.filter(r=>r.date&&r.date.startsWith(fm));
+  if(fv)rows=rows.filter(r=>(r.valide||'a_valider')===fv);
+  rows=[...rows].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const tb=document.getElementById('tbl-body');if(!tb)return;
+  if(!rows.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">📋</div>Aucune séance</div></td></tr>';return;}
+  tb.innerHTML=rows.map(s=>{
+    const bc=s.valide==='oui'?'b-green':s.valide==='partiel'?'b-blue':s.valide==='non'?'b-red':'b-gray';
+    const bl=s.valide==='oui'?'Validé':s.valide==='partiel'?'Partiel':s.valide==='non'?'Non validé':'À valider';
+    const df=s.date?new Date(s.date+'T12:00:00').toLocaleDateString('fr-FR'):'';
+    const hvS=s.valide==='partiel'?'color:var(--red);font-weight:700':'';
+    return`<tr><td><span class="tag">${s.formation||'–'}</span></td><td>${s.formateur}</td><td><strong>${s.stagiaire}</strong></td><td>${df}</td><td>${s.intitule}</td><td style="text-align:center">${s.heures_prevues||'–'}</td><td style="display:none">${s.lieu||'–'}</td><td style="display:none">${s.suivi||'–'}</td><td style="display:none">${s.type_seance||'–'}</td><td style="text-align:center;${hvS}">${s.heures_validees||'–'}</td><td><span class="badge ${bc}">${bl}</span></td><td style="white-space:nowrap"><button class="btn btn-green btn-sm" onclick="openModal('${s.id}')">✎</button>&nbsp;<button class="btn btn-red btn-sm" onclick="deleteRow('${s.id}')">✕</button></td></tr>`;
+  }).join('');
+}
+function clearFilters(){['fil-formation','fil-stagiaire','fil-mois','fil-statut'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});fillSel('fil-stagiaire',D.stagiaires,true);renderTable();}
+async function deleteRow(id){
+  if(!confirm('Supprimer cette séance ?'))return;
+  D.seances=D.seances.filter(s=>s.id!==id);
+  await save('seances');toast('Séance supprimée');renderTable();
+}
+
+// Modal
+function openModal(id){
+  editId=id;
+  const s=D.seances.find(r=>r.id===id);if(!s)return;
+  document.getElementById('m-intitule').value=s.intitule||'';
+  document.getElementById('m-hprev').value=s.heures_prevues||'';
+  document.getElementById('m-heures').value=s.heures_validees||'';
+  document.getElementById('m-valide').value=s.valide||'a_valider';
+  updateModalHeures();
+  document.getElementById('modal-val').classList.add('open');
+}
+function updateModalHeures(){
+  const valide=document.getElementById('m-valide').value;
+  const hprev=document.getElementById('m-hprev').value;
+  const hInput=document.getElementById('m-heures');
+  if(valide==='oui'){hInput.value=hprev||'';hInput.disabled=true;}
+  else if(valide==='non'){hInput.value='0';hInput.disabled=true;}
+  else if(valide==='a_valider'){hInput.value='';hInput.disabled=true;}
+  else{hInput.disabled=false;}
+}
+function closeModal(){document.getElementById('modal-val').classList.remove('open');editId=null;}
+async function saveValidation(){
+  const s=D.seances.find(r=>r.id===editId);if(!s)return;
+  const valide=document.getElementById('m-valide').value;
+  s.intitule=document.getElementById('m-intitule').value.trim()||s.intitule;
+  s.heures_prevues=document.getElementById('m-hprev').value||s.heures_prevues;
+  s.valide=valide;
+  if(valide==='oui'){s.heures_validees=s.heures_prevues||document.getElementById('m-heures').value;}
+  else if(valide==='non'){s.heures_validees='0';}
+  else if(valide==='a_valider'){s.heures_validees='';}
+  else{s.heures_validees=document.getElementById('m-heures').value;}
+  await save('seances');toast('Validation mise à jour ✓');closeModal();renderTable();
+}
+document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))closeModal();});
+
+// Formations
+async function createFormation(){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const nom=document.getElementById('new-formation-nom').value.trim();
+  const marche=document.getElementById('new-formation-marche').value.trim();
+  if(!nom)return;
+  if(D.formations.find(f=>f.nom===nom)){toast('Formation déjà existante','var(--red)');return;}
+  D.formations.push({id:Date.now().toString(),nom,marche,formateurs:[],stagiaires:[]});
+  const ok=await save('formations');
+  if(ok){document.getElementById('new-formation-nom').value='';document.getElementById('new-formation-marche').value='';renderFormations();refreshAll();toast('Formation créée ✓');}
+}
+async function deleteFormation(id){
+  const f=D.formations.find(f=>f.id===id);
+  if(!confirm(`Supprimer "${f?.nom}" ?`))return;
+  D.formations=D.formations.filter(f=>f.id!==id);
+  await save('formations');renderFormations();refreshAll();toast('Formation supprimée');
+}
+async function saveMarche(fid){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const f=D.formations.find(f=>f.id===fid);if(!f)return;
+  f.marche=document.getElementById('marche-'+fid).value.trim();
+  await save('formations');renderFormations();document.getElementById('fb-'+fid)?.classList.add('open');toast('N° de marché sauvegardé ✓');
+}
+function toggleFC(id){document.getElementById('fb-'+id).classList.toggle('open');}
+function renderFormations(){
+  const list=document.getElementById('formations-list');
+  if(!D.formations.length){list.innerHTML='<div class="empty"><div class="empty-icon">🎓</div>Aucune formation</div>';return;}
+  list.innerHTML=D.formations.map(f=>`
+    <div class="fc">
+      <div class="fc-head" onclick="toggleFC('${f.id}')">
+        <div class="fc-title"><span>${f.nom}</span>${f.marche?`<span class="tag" style="font-family:monospace;letter-spacing:.04em">🏷 ${f.marche}</span>`:''}<span class="tag">${f.formateurs.length} formateur(s)</span><span class="tag">${f.stagiaires.length} stagiaire(s)</span></div>
+        <div style="display:flex;gap:7px;align-items:center"><button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteFormation('${f.id}')">Supprimer</button><span style="color:#aaa">▾</span></div>
+      </div>
+      <div class="fc-body" id="fb-${f.id}">
+        <div style="margin-bottom:12px;display:flex;gap:8px;align-items:flex-end">
+          <div class="fg" style="flex:1"><label>N° de marché</label><input type="text" id="marche-${f.id}" value="${f.marche||''}" maxlength="20" placeholder="Ex : 2024-FOAD-001" style="font-family:monospace;letter-spacing:.04em"></div>
+          <button class="btn btn-gold btn-sm" onclick="saveMarche('${f.id}')">Enregistrer</button>
+        </div>
+        <div class="agrid">
+          <div class="asec">
+            <h4>Formateurs assignés</h4>
+            <ul class="alist">${f.formateurs.length?f.formateurs.map(n=>`<li><span>${n}</span><button class="btn btn-red btn-sm" onclick="removeFrom('${f.id}','formateurs','${n}')">✕</button></li>`).join(''):'<li style="color:#bbb">Aucun</li>'}</ul>
+            <div class="aadd"><select id="saf-${f.id}"><option value="">— Ajouter —</option>${D.formateurs.filter(n=>!f.formateurs.includes(n)).map(n=>`<option value="${n}">${n}</option>`).join('')}</select><button class="btn btn-gold btn-sm" onclick="addTo('${f.id}','formateurs')">Ajouter</button></div>
+          </div>
+          <div class="asec">
+            <h4>Stagiaires assignés</h4>
+            <ul class="alist">${f.stagiaires.length?f.stagiaires.map(n=>`<li><span>${n}</span><button class="btn btn-red btn-sm" onclick="removeFrom('${f.id}','stagiaires','${n}')">✕</button></li>`).join(''):'<li style="color:#bbb">Aucun</li>'}</ul>
+            <div class="aadd"><select id="sas-${f.id}"><option value="">— Ajouter —</option>${D.stagiaires.filter(n=>!D.formations.some(g=>g.stagiaires.includes(n))).map(n=>`<option value="${n}">${n}</option>`).join('')}</select><button class="btn btn-gold btn-sm" onclick="addTo('${f.id}','stagiaires')">Ajouter</button></div>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+async function addTo(fid,type){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const nom=document.getElementById((type==='formateurs'?'saf-':'sas-')+fid).value;if(!nom)return;
+  const f=D.formations.find(f=>f.id===fid);
+  if(!f[type].includes(nom))f[type].push(nom);
+  await save('formations');renderFormations();document.getElementById('fb-'+fid)?.classList.add('open');refreshAll();
+}
+async function removeFrom(fid,type,nom){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const f=D.formations.find(f=>f.id===fid);
+  f[type]=f[type].filter(n=>n!==nom);
+  await save('formations');renderFormations();document.getElementById('fb-'+fid)?.classList.add('open');refreshAll();
+  toast(`${nom} retiré·e ✓`);
+}
+
+// Personnes
+function renderPeople(){renderPList('list-stagiaires',D.stagiaires,'stagiaires');renderPList('list-formateurs',D.formateurs,'formateurs');}
+function renderPList(lid,items,type){document.getElementById(lid).innerHTML=items.length?items.map(n=>`<li><span>${n}</span><button class="btn btn-red btn-sm" onclick="delPerson('${type}','${n}')">✕</button></li>`).join(''):'<li style="color:#bbb;justify-content:center">Aucun</li>';}
+async function addPerson(type){
+  const key=type==='stagiaires'?'new-stagiaire':'new-formateur';
+  const nom=document.getElementById(key).value.trim();if(!nom)return;
+  if(D[type].includes(nom)){toast('Déjà existant','var(--red)');return;}
+  D[type].push(nom);document.getElementById(key).value='';
+  renderPeople();refreshAll();renderFormations();
+  if(H.formations){await save('formations');toast('Ajouté·e et sauvegardé·e ✓');}
+  else toast('Ajouté·e ✓ — connectez formations.csv pour sauvegarder');
+}
+async function delPerson(type,nom){
+  if(!confirm(`Supprimer "${nom}" ?\n(sera retiré·e de toutes les formations)`))return;
+  D[type]=D[type].filter(n=>n!==nom);
+  D.formations.forEach(f=>{f[type]=f[type].filter(n=>n!==nom);});
+  if(H.formations)await save('formations');
+  renderPeople();refreshAll();renderFormations();toast('Supprimé·e');
+}
+
+
+// Signatures
+function renderSignatures(){
+  const list=document.getElementById('sig-list');
+  if(!D.formateurs.length){list.innerHTML='<div class="empty"><div class="empty-icon">✍️</div>Aucun formateur enregistré — ajoutez-en dans l\'onglet Personnes</div>';return;}
+  list.innerHTML=D.formateurs.map(nom=>{
+    const hasSig=!!D.signatures[nom];
+    const safeid=nom.replace(/[^a-zA-Z0-9]/g,'_');
+    return`<div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="pill">✍</span> ${nom}</span>
+        ${hasSig?'<span class="badge b-green">Signature enregistrée ✓</span>':'<span class="badge b-gray">Pas encore de signature</span>'}
+      </div>
+      ${hasSig
+        ? `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+             <img src="${D.signatures[nom]}" style="height:60px;border:1px solid var(--border);border-radius:var(--r);background:#fff;padding:4px">
+             <div style="display:flex;gap:8px">
+               <button class="btn btn-ghost btn-sm" onclick="togglePad('${safeid}')">✎ Modifier</button>
+               <button class="btn btn-red btn-sm" onclick="deleteSig('${nom}')">✕ Supprimer</button>
+             </div>
+           </div>
+           <div id="pad-zone-${safeid}" style="display:none;margin-top:12px">${padHTML(safeid,nom)}</div>`
+        : `<div id="pad-zone-${safeid}" style="display:block">${padHTML(safeid,nom)}</div>`
+      }
+    </div>`;
+  }).join('');
+  D.formateurs.forEach(nom=>{
+    const safeid=nom.replace(/[^a-zA-Z0-9]/g,'_');
+    const zone=document.getElementById('pad-zone-'+safeid);
+    if(zone&&zone.style.display!=='none')initPad('pad-'+safeid);
+  });
+}
+
+function padHTML(safeid,nom){
+  return`<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+    <div>
+      <canvas id="pad-${safeid}" width="360" height="100"
+        style="border:1.5px solid var(--border);border-radius:var(--r);background:#fff;cursor:crosshair;touch-action:none;display:block"></canvas>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <label style="font-size:.7rem;color:#aaa">Épaisseur</label>
+        <input type="range" id="stroke-${safeid}" min="0.5" max="4" step="0.5" value="1.8"
+          style="width:100px;accent-color:var(--accent)">
+        <span style="font-size:.7rem;color:#aaa" id="stroke-val-${safeid}">1.8</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;padding-top:2px">
+      <button class="btn btn-gold btn-sm" onclick="saveSig('${nom}')">💾 Enregistrer</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearPad('${safeid}')">🗑 Effacer</button>
+    </div>
+  </div>`;
+}
+
+function togglePad(safeid){
+  const zone=document.getElementById('pad-zone-'+safeid);
+  const visible=zone.style.display!=='none';
+  zone.style.display=visible?'none':'block';
+  if(!visible)initPad('pad-'+safeid);
+}
+
+function initPad(canvasId){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const safeid=canvasId.replace('pad-','');
+  const slider=document.getElementById('stroke-'+safeid);
+  const sliderVal=document.getElementById('stroke-val-'+safeid);
+  if(slider&&sliderVal){
+    slider.addEventListener('input',()=>{sliderVal.textContent=slider.value;});
+  }
+  let drawing=false;
+  const pos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return{x:src.clientX-r.left,y:src.clientY-r.top};
+  };
+  const start=(e)=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const move=(e)=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#1c1c28';ctx.lineWidth=slider?parseFloat(slider.value):1.8;ctx.lineCap='round';ctx.stroke();};
+  const stop=()=>{drawing=false;};
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);canvas.addEventListener('mouseup',stop);canvas.addEventListener('mouseleave',stop);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',stop);
+}
+
+function clearPad(safeid){
+  const canvas=document.getElementById('pad-'+safeid);if(!canvas)return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+
+async function saveSig(nom){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  const safeid=nom.replace(/[^a-zA-Z0-9]/g,'_');
+  const canvas=document.getElementById('pad-'+safeid);if(!canvas)return;
+  const blank=document.createElement('canvas');blank.width=canvas.width;blank.height=canvas.height;
+  if(canvas.toDataURL()===blank.toDataURL()){toast('Le pad est vide — dessinez d\'abord la signature','var(--red)');return;}
+  D.signatures[nom]=canvas.toDataURL('image/png');
+  await save('formations');
+  toast(`Signature de ${nom} sauvegardée ✓`);
+  renderSignatures();
+}
+
+async function deleteSig(nom){
+  if(!H.formations){toast('Connectez d\'abord formations.csv','var(--red)');return;}
+  delete D.signatures[nom];
+  await save('formations');
+  toast(`Signature supprimée`);
+  renderSignatures();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  updateBanner();
+  checkSavedHandles();
+});
+</script>
+<div style="text-align:center;padding:18px 0 10px;font-size:.72rem;color:#bbb;font-family:'Jost',sans-serif;letter-spacing:.04em">
+  
+   Développé par Nicolas SANTRAINE — Pour EDUCATION & FORMATION BERNAY — 2026
+  
+</div>
+</body>
+</html>
