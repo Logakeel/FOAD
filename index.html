@@ -56,6 +56,8 @@
   tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
   tbody tr:hover{background:var(--paper2);}
   tbody td{padding:8px 10px;vertical-align:middle;}
+  table td:first-child,table th:first-child{max-width:130px;}
+  table td:first-child .tag{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;}
   .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;}
   .b-green{background:#d4edd9;color:var(--green);}
   .b-red{background:#fde8e8;color:var(--red);}
@@ -662,7 +664,7 @@ function renderTable(){
     const bl=s.valide==='oui'?'Validé':s.valide==='partiel'?'Partiel':s.valide==='non'?'Non validé':'À valider';
     const df=s.date?new Date(s.date+'T12:00:00').toLocaleDateString('fr-FR'):'';
     const hvS=s.valide==='partiel'?'color:var(--red);font-weight:700':'';
-    return`<tr><td><span class="tag">${s.formation||'–'}</span></td><td>${s.formateur}</td><td><strong>${s.stagiaire}</strong></td><td>${df}</td><td>${s.intitule}</td><td style="text-align:center">${s.heures_prevues||'–'}</td><td style="display:none">${s.lieu||'–'}</td><td style="display:none">${s.suivi||'–'}</td><td style="display:none">${s.type_seance||'–'}</td><td style="text-align:center;${hvS}">${s.heures_validees||'–'}</td><td><span class="badge ${bc}">${bl}</span></td><td style="white-space:nowrap"><button class="btn btn-green btn-sm" onclick="openModal('${s.id}')">✎</button>&nbsp;<button class="btn btn-red btn-sm" onclick="deleteRow('${s.id}')">✕</button></td></tr>`;
+    return`<tr><td><span class="tag" title="${s.formation||''}">${s.formation||'–'}</span></td><td>${s.formateur}</td><td><strong>${s.stagiaire}</strong></td><td>${df}</td><td>${s.intitule}</td><td style="text-align:center">${s.heures_prevues||'–'}</td><td style="display:none">${s.lieu||'–'}</td><td style="display:none">${s.suivi||'–'}</td><td style="display:none">${s.type_seance||'–'}</td><td style="text-align:center;${hvS}">${s.heures_validees||'–'}</td><td><span class="badge ${bc}">${bl}</span></td><td style="white-space:nowrap"><button class="btn btn-green btn-sm" onclick="openModal('${s.id}')">✎</button>&nbsp;<button class="btn btn-red btn-sm" onclick="deleteRow('${s.id}')">✕</button></td></tr>`;
   }).join('');
 }
 function clearFilters(){['fil-formation','fil-stagiaire','fil-mois','fil-statut'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});fillSel('fil-stagiaire',D.stagiaires,true);renderTable();}
